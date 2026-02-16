@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"os"
-	"os/exec"
 	"strings"
 	"syscall"
 
@@ -30,26 +28,24 @@ import (
 
 type Command struct {
 	Endpoint       string
-	Method         string
 	ContentType    string
+	Method         string
 	FollowRedirect bool
 }
 
 var (
-	contentTypeJson = "application/json"
+	contentTypeJson           = "application/json"
+	contentTypeTextHTML       = "text/html"
+	contentTypeTextCSS        = "text/css"
+	contentTypeTextJAVASCRIPT = "text/css"
 )
 
-// This automatically uses bat to read 
+// This automatically uses bat to read
 // show content on the terminal to avoid
 // dumping huge respones on the terminal
-func Pager(content string) error {
-	cmd := exec.Command("/opt/homebrew/bin/bat")
-	cmd.Stdout = os.Stdout
-	cmd.Stdin = strings.NewReader(content)
-
-	return cmd.Run()
-}
-
+//
+// By default, this uses bat, looking into
+// /opt/homebrew/bin/bat
 func GetArgs() Command {
 	method := flag.Bool("post", false, "Make POST request to endpoint")
 	endpoint := flag.String("ep", "http://localhost:3000", "Endpoint to make request to, default is localhost:3000")
@@ -72,8 +68,10 @@ func GetArgs() Command {
 }
 
 type ServerResponse struct {
-	StatusCode int
-	Body       string
+	StatusCode  int
+	Body        string
+	PagerType   string
+	ContentType string
 }
 
 var inProgress = errors.New("Server still under construction")
@@ -114,7 +112,18 @@ func makeRequest(cmd Command) (ServerResponse, error) {
 		return ServerResponse{}, err
 	}
 
-	return ServerResponse{StatusCode: res.StatusCode, Body: string(body)}, nil
+	serverRes := ServerResponse{}
+	serverRes.StatusCode = res.StatusCode
+	serverRes.Body = string(body)
+	serverRes.PagerType = contentTypeTextHTML
+
+	contentType := res.Header.Get("content-type")
+	switch true {
+	case strings.Contains(contentType, contentTypeJson):
+		serverRes.PagerType = contentTypeJson
+	}
+
+	return serverRes, nil
 }
 
 func main() {
@@ -129,7 +138,7 @@ func main() {
 
 	fmt.Printf(" status-code: %d\n", res.StatusCode)
 	if len(res.Body) > 100 {
-		log.Fatal(Pager(res.Body))
+		log.Fatal(Pager(res))
 		return
 	} else {
 		fmt.Printf(" body: %s\n", res.Body)
