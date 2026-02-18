@@ -69,17 +69,12 @@ func GetArgs() Command {
 type ServerResponse struct {
 	StatusCode int
 	Body       string
-	// PagerType   string
 	ContentType string
 }
 
 var inProgress = errors.New("Server still under construction")
 
 func makeRequest(cmd Command) (ServerResponse, error) {
-	// if cmd.Method != http.MethodGet {
-	// 	slog.Error("Method still under construction", "for", cmd.Method)
-	// 	return ServerResponse{}, inProgress
-	// }
 
 	switch cmd.Method {
 	case http.MethodPost:
@@ -114,13 +109,6 @@ func makeRequest(cmd Command) (ServerResponse, error) {
 	serverRes := ServerResponse{}
 	serverRes.StatusCode = res.StatusCode
 	serverRes.Body = string(body)
-	// serverRes.PagerType = contentTypeTextHTML
-
-	// contentType := res.Header.Get("content-type")
-	// switch true {
-	// case strings.Contains(contentType, contentTypeJson):
-	// 	serverRes.PagerType = contentTypeJson
-	// }
 	serverRes.ContentType = res.Header.Get("content-type")
 
 	return serverRes, nil

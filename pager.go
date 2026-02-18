@@ -24,8 +24,6 @@ var (
 // Sends output from res.Body to stdout depending on the
 // content-type and pager assigned to it
 func Pager(res ServerResponse) error {
-	// cmd := exec.Command("/opt/homebrew/bin/bat")
-
 	pathToPager := canonPager(res)
 
 	cmd := exec.Command(pathToPager)
