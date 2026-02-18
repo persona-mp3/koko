@@ -13,7 +13,7 @@ import (
  And these are system pagers
  1. less
  2. cat but is not used
- */
+*/
 
 var (
 	jqPagerPath   = "/opt/homebrew/bin/jq"
@@ -37,10 +37,10 @@ func Pager(res ServerResponse) error {
 // Returns the pager path to use depending on the
 // content-type of application.
 func canonPager(res ServerResponse) string {
-	switch res.PagerType {
-	case contentTypeJson:
+	switch true {
+	case strings.Contains(res.ContentType, contentTypeJson):
 		return jqPagerPath
-	case contentTypeTextHTML:
+	case strings.Contains(res.ContentType, contentTypeTextHTML):
 		return batPagerPath
 
 	default:

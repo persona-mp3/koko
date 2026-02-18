@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"strings"
 	"syscall"
 
 	"log/slog"
@@ -68,9 +67,9 @@ func GetArgs() Command {
 }
 
 type ServerResponse struct {
-	StatusCode  int
-	Body        string
-	PagerType   string
+	StatusCode int
+	Body       string
+	// PagerType   string
 	ContentType string
 }
 
@@ -115,13 +114,14 @@ func makeRequest(cmd Command) (ServerResponse, error) {
 	serverRes := ServerResponse{}
 	serverRes.StatusCode = res.StatusCode
 	serverRes.Body = string(body)
-	serverRes.PagerType = contentTypeTextHTML
+	// serverRes.PagerType = contentTypeTextHTML
 
-	contentType := res.Header.Get("content-type")
-	switch true {
-	case strings.Contains(contentType, contentTypeJson):
-		serverRes.PagerType = contentTypeJson
-	}
+	// contentType := res.Header.Get("content-type")
+	// switch true {
+	// case strings.Contains(contentType, contentTypeJson):
+	// 	serverRes.PagerType = contentTypeJson
+	// }
+	serverRes.ContentType = res.Header.Get("content-type")
 
 	return serverRes, nil
 }
@@ -137,10 +137,8 @@ func main() {
 	}
 
 	fmt.Printf(" status-code: %d\n", res.StatusCode)
-	if len(res.Body) > 100 {
-		log.Fatal(Pager(res))
-		return
-	} else {
-		fmt.Printf(" body: %s\n", res.Body)
+	if err := Pager(res); err != nil {
+		log.Fatal(err)
 	}
+
 }
